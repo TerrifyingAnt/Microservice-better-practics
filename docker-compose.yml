@@ -1,0 +1,19 @@
+version: '3'
+
+services: 
+  order_service:
+    container_name: order_service
+    build: 1/
+    ports:
+      - 8000:80
+    environment:
+      - POSTGRES_URL=postgresql+psycopg2://admin:admin@localhost:5432/OrderService_db
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
+  
+  notification_service:
+    container_name: notification_service
+    build: 2/
+    ports:
+      - 8001:80
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
