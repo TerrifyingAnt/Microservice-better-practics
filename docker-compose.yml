@@ -11,6 +11,8 @@ services:
         POSTGRES_DB: "orderservice_db"
         POSTGRES_USER: "postgres"
         POSTGRES_PASSWORD: "postgres"
+      networks:
+      - services_network
 
   rabbitmq:
     container_name: rabbitmq
@@ -22,16 +24,24 @@ services:
       - 5672:5672
       - 15672:15672
     hostname: my-rabbitmq
+    networks:
+      - services_network
 
   order_service:
     container_name: order_service
     build: 1/
     ports:
       - 8000:80
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
     environment:
       - POSTGRES_URL=postgresql://postgres:postgres@postgres/orderservice_db
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
       - PORT=80
+    networks:
+      - services_network
+      - loki_network
   
   notification_service:
     container_name: notification_service
@@ -41,6 +51,67 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
 
+  grafana:
+    image: "grafana/grafana"
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - "./monitoring/grafana:/var/lib/grafana"
+      - "./monitoring/grafana/grafana-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-datasource.yaml"
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: "prom/prometheus"
+    container_name: prometheus
+    volumes:
+      - "./monitoring/prometheus:/prometheus"
+      - "./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - order_service
+    networks:
+      - services_network
+  
+  loki:
+    image: grafana/loki:latest
+    hostname: loki
+    container_name: loki
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml 
+      - ./monitoring/loki:/etc/loki/data
+    ports:
+     - "3100:3100" 
+    restart: unless-stopped
+    user: 1000:1000
+    command: -config.file=/etc/loki/loki-config.yml 
+    networks:
+      - loki_network
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    depends_on:
+      - loki
+    hostname: promtail
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    networks:
+      - loki_network
+
+networks:
+  loki_network:
+    driver: bridge
+  services_network:
+    driver: bridge
     
 
 
