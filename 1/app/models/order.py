@@ -11,8 +11,6 @@ class OrderStatuses(enum.Enum):
     DONE = 'DONE'
 
 
-
-
 class Order(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
@@ -20,4 +18,3 @@ class Order(BaseModel):
     description: str
     status: OrderStatuses
     user_id: UUID
-
