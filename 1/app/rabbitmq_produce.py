@@ -25,10 +25,10 @@ def send_notification(order):
         "status": str(order.status)
     }
 
-    channel.exchange_declare(exchange='notifications_exchange', exchange_type='direct', durable=True)
+    channel.exchange_declare(exchange='created_notifications_exchange', exchange_type='direct', durable=True)
     message_body = json.dumps(new_notification)
 
-    channel.basic_publish(exchange='notifications_exchange', routing_key="notification_service",
+    channel.basic_publish(exchange='created_notifications_exchange', routing_key="notification_service",
                           body=message_body.encode('utf-8'))
 
     connection.close()

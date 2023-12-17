@@ -6,7 +6,7 @@ from app.schemas.base_schema import Base
 
 
 class Order(Base):
-    __tablename__ = 'tasks'
+    __tablename__ = 'orders'
 
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     title: Mapped[str]

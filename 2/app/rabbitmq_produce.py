@@ -16,3 +16,5 @@ def send_notification(task):
                           body=message_body.encode('utf-8'))
 
     connection.close()
+
+    

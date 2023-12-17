@@ -6,7 +6,7 @@ import requests
 
 from app.models.order import Order, OrderStatuses
 from app.repositories.order_repo import OrderRepo
-from app import send_notification
+from app.rabbitmq_produce import send_notification
 from app.utils.utils import order_string_status_to_enum
 
 
@@ -24,7 +24,7 @@ class OrderService:
     def create_order(self, title: str, description: str, user_id: UUID):
         """метод создания заказа"""
         new_order = Order(id=uuid.uuid4(), title=title, description=description, user_id=user_id,
-                            status=OrderStatuses.ACTIVATE)
+                            status=OrderStatuses.CREATED)
         send_notification(new_order)
         return self.order_repo.create_order(new_order)
 

@@ -43,6 +43,8 @@ class OrderRepo:
     def create_order(self, order: Order) -> Order:
         try:
             db_order = self._map_to_schema(order)
+            print(order)
+            print(db_order)
             self.db.add(db_order)
             self.db.commit()
             return order

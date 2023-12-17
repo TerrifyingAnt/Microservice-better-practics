@@ -1,13 +1,35 @@
 version: '3'
 
 services: 
+  postgres:
+      image: postgres:14
+      container_name: postgres
+      ports:
+        - 5432:5432
+      restart: always
+      environment:
+        POSTGRES_DB: "orderservice_db"
+        POSTGRES_USER: "postgres"
+        POSTGRES_PASSWORD: "postgres"
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.10.6-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - 5672:5672
+      - 15672:15672
+    hostname: my-rabbitmq
+
   order_service:
     container_name: order_service
     build: 1/
     ports:
       - 8000:80
     environment:
-      - POSTGRES_URL=postgresql+psycopg2://admin:admin@localhost:5432/OrderService_db
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres/orderservice_db
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
   
   notification_service:
@@ -17,3 +39,9 @@ services:
       - 8001:80
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672/
+
+    
+
+
+
+
