@@ -1,0 +1,57 @@
+{
+  "$schema": "https://www.krakend.io/schema/krakend.json",
+  "version": 3,
+  "name": "KrakenD - API Gateway",
+  "timeout": "15000ms",
+  "cache_ttl": "300s",
+  "output_encoding": "json",
+  "port": 8080,
+  "endpoints":[
+  {
+      "endpoint": "/api/order/",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "extra_config": {
+          "auth/validator": {
+              "alg": "RS256",
+              "jwk_url": "http://host.docker.internal:8081/auth/realms/order/protocol/openid-connect/certs",
+              "disable_jwk_security": true,
+              "roles": ["admin"],
+              "roles_key_is_nested": true,
+              "roles_key": "realm_access.roles"
+          }
+      },
+      "backend": [
+          {
+          "host":["https://bbajgdrq3chrv1h8ne5l.containers.yandexcloud.net"],
+          "url_pattern": "/api/order/",
+          "method": "GET",
+          "encoding": "no-op"
+          }
+      ]
+  },
+  {
+      "endpoint": "/api/order/{id}/done",
+      "method": "POST",
+      "output_encoding": "json",
+      "extra_config": {
+          "auth/validator": {
+              "alg": "RS256",
+              "jwk_url": "http://host.docker.internal:8081/auth/realms/order/protocol/openid-connect/certs",
+              "disable_jwk_security": true,
+              "roles": ["user"],
+              "roles_key_is_nested": true,
+              "roles_key": "realm_access.roles"
+          }
+      },
+      "backend": [
+          {
+          "host":["https://bbajgdrq3chrv1h8ne5l.containers.yandexcloud.net"],
+          "url_pattern": "/api/order/{id}/done",
+          "method": "POST",
+          "encoding": "json"
+          }
+      ]
+  }
+]
+}
